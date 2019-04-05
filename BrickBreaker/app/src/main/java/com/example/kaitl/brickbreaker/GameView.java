@@ -9,15 +9,19 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import java.util.Random;
+
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import static java.lang.Math.pow;
+import static java.lang.Math.random;
 
 class GameView extends SurfaceView
 {
     private SurfaceHolder holder;
 
-    private int ballX = 10;
-    private int ballY = 10;
+    private int ballX = 300;
+    private int ballY = 300;
     private int xspeed = 10;
     private int yspeed = 10;
     private int radius = 20;
@@ -28,8 +32,8 @@ class GameView extends SurfaceView
 
     private int paddleX = 0;
     private int paddleY = 0;
-    private int paddleHeight = 40;
-    private int paddleWidth = 80;
+    private int paddleHeight = 80;
+    private int paddleWidth = 160;
     private int paddleSpeed = 10;
 
     private int level = 1;
@@ -37,6 +41,8 @@ class GameView extends SurfaceView
 
     private float previousMouseX;
     private float previousMouseY;
+
+    private PowerUp powerup;
 
     private GameThread gameThread;
 
@@ -105,7 +111,7 @@ class GameView extends SurfaceView
             Log.i("debug", "onDraw: ball drawn");
 
             //draw paddle
-            paint.setColor(Color.BLACK);
+            paint.setColor(Color.GREEN);
             canvas.drawRect(paddleX, paddleY, paddleX + paddleWidth, paddleY + paddleHeight, paint);
 
             //draw bricks
@@ -116,18 +122,23 @@ class GameView extends SurfaceView
                     if (bricks[i].getHealth() == 1)
                         paint.setColor(Color.YELLOW);
                     else if(bricks[i].getHealth() == 2)
-                        paint.setColor(Color.GREEN);
+                        paint.setColor(Color.RED);
                     canvas.drawRect(bricks[i].getX(), bricks[i].getY(),
                             bricks[i].getX() + brickWidth, bricks[i].getY() + brickHeight, paint);
                     Log.i("debug", "onDraw: brick drawn");
                 }
+            }
+
+            //draw powerup if there is one active, a green sphere the size of the ball
+            if(powerup != null){
+                paint.setColor(Color.GREEN);
+                canvas.drawCircle(powerup.getX(), powerup.getY(), 20, paint);
             }
         }
     }
 
     private void Setup()
     {
-
         Log.i("debug", "Setup: called");
         if(level == 1)
         {
@@ -153,6 +164,12 @@ class GameView extends SurfaceView
         ballX += xspeed;
         ballY += yspeed;
 
+        if(powerup != null)
+        {
+            int posY = powerup.getY() - powerup.getSpeed();
+            powerup.setY(posY);
+        }
+
         //check for off screen
         if(ballX < 0 || ballX + radius >= canvas.getWidth())
             xspeed*=-1;
@@ -162,7 +179,21 @@ class GameView extends SurfaceView
             GameOver(false);
 
         //check for paddle
-
+        if (Math.abs(ballY - paddleY) < radius && ballX + radius < paddleX + paddleWidth/2 && ballX - radius > paddleX - paddleWidth/2)
+        {
+            // Hit the top
+            yspeed *= -1;
+        }
+        //else if (Math.abs(ballX - paddleX) < radius)
+        //{
+            // Hit the left
+            //xspeed *= -1;
+        //}
+        //else if (Math.abs(ballX - paddleX + paddleWidth) < radius)
+        //{
+            // Hit the right
+            //xspeed *= -1;
+        //}
 
         //check for each brick
         for(int i = 0; i < bricks.length; i++)
@@ -175,32 +206,55 @@ class GameView extends SurfaceView
                 if (bricks[i].getHealth() > 0)
                 {
                     if (Math.abs(ballY - bricks[i].getY()) < radius)
+                {
+                    // Hit the top
+                    bricks[i].setHealth(bricks[i].getHealth() - 1);
+                    yspeed *= -1;
+                }
+                else if (Math.abs(ballY - bricks[i].getY() + brickHeight) < radius)
+                {
+                    // Hit the bottom
+                    bricks[i].setHealth(bricks[i].getHealth() - 1);
+                    yspeed *= -1;
+                }
+                else if (Math.abs(ballX - bricks[i].getX()) < radius)
+                {
+                    // Hit the left
+                    bricks[i].setHealth(bricks[i].getHealth() - 1);
+                    xspeed *= -1;
+                }
+                else if (Math.abs(ballX - bricks[i].getX() + brickWidth) < radius)
+                {
+                    // Hit the right
+                    bricks[i].setHealth(bricks[i].getHealth() - 1);
+                    xspeed *= -1;
+                }
+
+                    if (bricks[i].getHealth() > 0)
                     {
-                        // Hit the top
-                        bricks[i].setHealth(bricks[i].getHealth() - 1);
-                        yspeed *= -1;
-                    }
-                    else if (Math.abs(ballY - bricks[i].getY() + brickHeight) < radius)
-                    {
-                        // Hit the bottom
-                        bricks[i].setHealth(bricks[i].getHealth() - 1);
-                        yspeed *= -1;
-                    }
-                    else if (Math.abs(ballX - bricks[i].getX()) < radius)
-                    {
-                        // Hit the left
-                        bricks[i].setHealth(bricks[i].getHealth() - 1);
-                        xspeed *= -1;
-                    }
-                    else if (Math.abs(ballX - bricks[i].getX() + brickWidth) < radius)
-                    {
-                        // Hit the right
-                        bricks[i].setHealth(bricks[i].getHealth() - 1);
-                        xspeed *= -1;
+                        Random rand = new Random();
+                        int spawnChance = rand.nextInt(15)+1;
+                        if(spawnChance == 15){
+                            //spawn a powerup
+                            powerup = new PowerUp(bricks[i].getX(), bricks[i].getY());
+                        }
                     }
                 }
             }
         }
+
+        //check for powerup
+        if(powerup != null)
+        {
+            if (Math.abs(powerup.getY() - paddleHeight) < radius || Math.abs(powerup.getY() - paddleWidth) < radius || Math.abs(powerup.getX() - paddleWidth) < radius || Math.abs(powerup.getX() - paddleHeight) < radius) {
+                paddleWidth += 10;
+                powerup = null;
+            } else if (powerup.getY() + radius >= canvas.getHeight()) {
+                powerup = null;
+            }
+        }
+
+        if(levelOver()){NextLevel();}
     }
 
     private boolean levelOver()
@@ -217,8 +271,9 @@ class GameView extends SurfaceView
         return true;
     }
 
-    private void LevelOver()
+    private void NextLevel()
     {
+        paddleWidth = 160;
         level++;
         if (level <= maxLevel)
             Setup();
