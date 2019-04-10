@@ -20,6 +20,9 @@ class GameView extends SurfaceView
 {
     private SurfaceHolder holder;
 
+    private boolean running = true;
+    private String winner;
+
     private int ballX = 300;
     private int ballY = 300;
     private int xspeed = 10;
@@ -34,7 +37,7 @@ class GameView extends SurfaceView
     private int paddleY = 0;
     private int paddleHeight = 80;
     private int paddleWidth = 160;
-    private int paddleSpeed = 10;
+    private int paddleSpeed = 20;
 
     private int level = 1;
     private int maxLevel = 2;
@@ -92,48 +95,57 @@ class GameView extends SurfaceView
     @Override
     protected  void onDraw(Canvas canvas)
     {
-        checkCollision(canvas);
+        if(running) {
+            checkCollision(canvas);
 
-        //keep paddle Y constant
-        if(paddleY == 0)
-            paddleY = canvas.getHeight() - 30;
+            //keep paddle Y constant
+            if (paddleY == 0)
+                paddleY = canvas.getHeight() - 30;
 
-        //draw the game
-        if (canvas != null)
-        {
-            //canvas colours
-            canvas.drawColor(Color.BLUE);
-            Paint paint = new Paint();
+            //draw the game
+            if (canvas != null) {
+                //canvas colours
+                canvas.drawColor(Color.BLUE);
+                Paint paint = new Paint();
 
-            //draw the ball
-            paint.setColor(Color.GRAY);
-            canvas.drawCircle(ballX, ballY, radius, paint);
-            Log.i("debug", "onDraw: ball drawn");
+                //draw the ball
+                paint.setColor(Color.GRAY);
+                canvas.drawCircle(ballX, ballY, radius, paint);
+                Log.i("debug", "onDraw: ball drawn");
 
-            //draw paddle
-            paint.setColor(Color.GREEN);
-            canvas.drawRect(paddleX, paddleY, paddleX + paddleWidth, paddleY + paddleHeight, paint);
+                //draw paddle
+                paint.setColor(Color.GREEN);
+                canvas.drawRect(paddleX, paddleY, paddleX + paddleWidth, paddleY + paddleHeight, paint);
 
-            //draw bricks
-            for(int i = 0; i < bricks.length; i++)
-            {
-                if(bricks[i].getHealth() > 0)
-                {
-                    if (bricks[i].getHealth() == 1)
-                        paint.setColor(Color.YELLOW);
-                    else if(bricks[i].getHealth() == 2)
-                        paint.setColor(Color.RED);
-                    canvas.drawRect(bricks[i].getX(), bricks[i].getY(),
-                            bricks[i].getX() + brickWidth, bricks[i].getY() + brickHeight, paint);
-                    Log.i("debug", "onDraw: brick drawn");
+                //draw bricks
+                for (int i = 0; i < bricks.length; i++) {
+                    if (bricks[i].getHealth() > 0) {
+                        if (bricks[i].getHealth() == 1)
+                            paint.setColor(Color.YELLOW);
+                        else if (bricks[i].getHealth() == 2)
+                            paint.setColor(Color.RED);
+                        canvas.drawRect(bricks[i].getX(), bricks[i].getY(),
+                                bricks[i].getX() + brickWidth, bricks[i].getY() + brickHeight, paint);
+                        Log.i("debug", "onDraw: brick drawn");
+                    }
+                }
+
+                //draw powerup if there is one active, a green sphere the size of the ball
+                if (powerup != null) {
+                    paint.setColor(Color.GREEN);
+                    canvas.drawCircle(powerup.getX(), powerup.getY(), 20, paint);
                 }
             }
-
-            //draw powerup if there is one active, a green sphere the size of the ball
-            if(powerup != null){
-                paint.setColor(Color.GREEN);
-                canvas.drawCircle(powerup.getX(), powerup.getY(), 20, paint);
-            }
+        }
+        else
+        {
+            //game is over
+            canvas.drawColor(Color.BLACK);
+            Paint paint = new Paint();
+            canvas.drawPaint(paint);
+            paint.setColor(Color.WHITE);
+            paint.setTextSize(200);
+            canvas.drawText(winner, 50, canvas.getHeight() / 2, paint);
         }
     }
 
@@ -184,16 +196,6 @@ class GameView extends SurfaceView
             // Hit the top
             yspeed *= -1;
         }
-        //else if (Math.abs(ballX - paddleX) < radius)
-        //{
-            // Hit the left
-            //xspeed *= -1;
-        //}
-        //else if (Math.abs(ballX - paddleX + paddleWidth) < radius)
-        //{
-            // Hit the right
-            //xspeed *= -1;
-        //}
 
         //check for each brick
         for(int i = 0; i < bricks.length; i++)
@@ -283,7 +285,12 @@ class GameView extends SurfaceView
 
     private void GameOver(boolean win)
     {
+        if(win)
+            winner = "You Win!";
+        else
+            winner = "You Lose!";
 
+        running = false;
     }
 
     @Override
