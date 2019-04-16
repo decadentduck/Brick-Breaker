@@ -40,7 +40,7 @@ class GameView extends SurfaceView
     private int paddleSpeed = 20;
 
     private int level = 1;
-    private int maxLevel = 2;
+    private int maxLevel = 3;
 
     private float previousMouseX;
     private float previousMouseY;
@@ -163,10 +163,28 @@ class GameView extends SurfaceView
         }
         else if (level == 2)
         {
+            Log.i("debug", "Setup: level 2");
             bricks = new Brick[10];
             for(int i = 0; i < bricks.length; i++)
             {
-                bricks[i] = new Brick(i*10, i, 1);
+                if(i < 5){
+                    bricks[i] = new Brick(100, i * 200, 1);
+                }
+                else {
+                    bricks[i] = new Brick(1000, (i - 5) * 200, 1);
+                }
+
+            }
+        }
+        else if (level == 3){
+            Log.i("debug", "Setup: level 3");
+            bricks = new Brick[10];
+
+            if(i < 5){
+                bricks[i] = new Brick(i * 100, i * 100, 1);
+            }
+            else {
+                bricks[i] = new Brick(1000, (i - 5) * 200, 1);
             }
         }
     }
