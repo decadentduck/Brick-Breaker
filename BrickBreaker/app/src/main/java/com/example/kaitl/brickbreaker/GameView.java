@@ -47,6 +47,8 @@ class GameView extends SurfaceView
 
     private PowerUp powerup;
 
+    public Sound bounce = backgroundmusic.mp3;
+
     private GameThread gameThread;
 
     public GameView(Context context)
@@ -226,29 +228,29 @@ class GameView extends SurfaceView
                 if (bricks[i].getHealth() > 0)
                 {
                     if (Math.abs(ballY - bricks[i].getY()) < radius)
-                {
-                    // Hit the top
-                    bricks[i].setHealth(bricks[i].getHealth() - 1);
-                    yspeed *= -1;
-                }
-                else if (Math.abs(ballY - bricks[i].getY() + brickHeight) < radius)
-                {
-                    // Hit the bottom
-                    bricks[i].setHealth(bricks[i].getHealth() - 1);
-                    yspeed *= -1;
-                }
-                else if (Math.abs(ballX - bricks[i].getX()) < radius)
-                {
-                    // Hit the left
-                    bricks[i].setHealth(bricks[i].getHealth() - 1);
-                    xspeed *= -1;
-                }
-                else if (Math.abs(ballX - bricks[i].getX() + brickWidth) < radius)
-                {
-                    // Hit the right
-                    bricks[i].setHealth(bricks[i].getHealth() - 1);
-                    xspeed *= -1;
-                }
+                    {
+                        // Hit the top
+                        bricks[i].setHealth(bricks[i].getHealth() - 1);
+                        yspeed *= -1;
+                    }
+                    else if (Math.abs(ballY - bricks[i].getY() + brickHeight) < radius)
+                    {
+                        // Hit the bottom
+                        bricks[i].setHealth(bricks[i].getHealth() - 1);
+                        yspeed *= -1;
+                    }
+                    else if (Math.abs(ballX - bricks[i].getX()) < radius)
+                    {
+                        // Hit the left
+                        bricks[i].setHealth(bricks[i].getHealth() - 1);
+                        xspeed *= -1;
+                    }
+                    else if (Math.abs(ballX - bricks[i].getX() + brickWidth) < radius)
+                    {
+                        // Hit the right
+                        bricks[i].setHealth(bricks[i].getHealth() - 1);
+                        xspeed *= -1;
+                    }
 
                     if (bricks[i].getHealth() > 0)
                     {
@@ -259,6 +261,8 @@ class GameView extends SurfaceView
                             powerup = new PowerUp(bricks[i].getX(), bricks[i].getY());
                         }
                     }
+
+
                 }
             }
         }
