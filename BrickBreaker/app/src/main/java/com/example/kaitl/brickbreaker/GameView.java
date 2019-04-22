@@ -179,12 +179,12 @@ class GameView extends SurfaceView
         else if (level == 3){
             Log.i("debug", "Setup: level 3");
             bricks = new Brick[10];
-
-            if(i < 5){
-                bricks[i] = new Brick(i * 100, i * 100, 1);
-            }
-            else {
-                bricks[i] = new Brick(1000, (i - 5) * 200, 1);
+            for(int i = 0; i < bricks.length; i++) {
+                if (i < 5) {
+                    bricks[i] = new Brick(i * 100, i * 100, 1);
+                } else {
+                    bricks[i] = new Brick(1000, (i - 5) * 200, 1);
+                }
             }
         }
     }
