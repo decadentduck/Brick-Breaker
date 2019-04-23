@@ -96,9 +96,10 @@ class GameView extends SurfaceView
 
         Setup();
 
-
         music = MediaPlayer.create(context, R.raw.backgroundmusic);
         soundEffect = MediaPlayer.create(context, R.raw.blipsoundeffect);
+        music.setLooping(true);
+        music.start();
     }
 
     @Override
@@ -216,6 +217,11 @@ class GameView extends SurfaceView
             yspeed*=-1;
         else if(ballY + radius >= canvas.getHeight())
             GameOver(false);
+        //paddle off screen
+        if(paddleX < 0)
+            paddleX = 0;
+        if(paddleX + paddleWidth > canvas.getWidth())
+            paddleX = canvas.getWidth() - paddleWidth;
 
         //check for paddle
         if (Math.abs(ballY - paddleY) < radius && ballX + radius < paddleX + paddleWidth/2 && ballX - radius > paddleX - paddleWidth/2)
