@@ -120,7 +120,6 @@ class GameView extends SurfaceView
                 //draw the ball
                 paint.setColor(Color.GRAY);
                 canvas.drawCircle(ballX, ballY, radius, paint);
-                Log.i("debug", "onDraw: ball drawn");
 
                 //draw paddle
                 paint.setColor(Color.GREEN);
@@ -135,7 +134,6 @@ class GameView extends SurfaceView
                             paint.setColor(Color.RED);
                         canvas.drawRect(bricks[i].getX(), bricks[i].getY(),
                                 bricks[i].getX() + brickWidth, bricks[i].getY() + brickHeight, paint);
-                        Log.i("debug", "onDraw: brick drawn");
                     }
                 }
 
@@ -224,7 +222,7 @@ class GameView extends SurfaceView
         //move paddle
         if(powerup != null)
         {
-            int posY = powerup.getY() - powerup.getSpeed();
+            int posY = powerup.getY() + powerup.getSpeed();
             powerup.setY(posY);
         }
     }
@@ -326,12 +324,18 @@ class GameView extends SurfaceView
         //check for powerup
         if(powerup != null)
         {
-            if (Math.abs(powerup.getY() - paddleHeight) < radius || Math.abs(powerup.getY() - paddleWidth) < radius || Math.abs(powerup.getX() - paddleWidth) < radius || Math.abs(powerup.getX() - paddleHeight) < radius) {
+            //check for paddle
+            DeltaX = powerup.getX() - max(paddleX, min( powerup.getX(), paddleX + paddleWidth));
+            DeltaY =  powerup.getY() - max(paddleY, min( powerup.getY(), paddleY + paddleWidth));
+
+            if((DeltaX * DeltaX + DeltaY * DeltaY) < (radius * radius))
+            {
                 paddleWidth += 10;
                 powerup = null;
-            } else if (powerup.getY() + radius >= canvas.getHeight()) {
-                powerup = null;
             }
+            else if (powerup.getY() + radius >= canvas.getHeight())
+                powerup = null;
+
         }
 
         if(levelOver()){NextLevel();}
