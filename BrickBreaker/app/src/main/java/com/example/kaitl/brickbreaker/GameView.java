@@ -106,11 +106,9 @@ class GameView extends SurfaceView
     protected void onDraw(Canvas canvas)
     {
         if(running) {
-            checkCollision(canvas);
+            update();
 
-            //keep paddle Y constant
-            if (paddleY == 0)
-                paddleY = canvas.getHeight() - 30;
+            checkCollision(canvas);
 
             //draw the game
             if (canvas != null) {
@@ -199,7 +197,7 @@ class GameView extends SurfaceView
         }
     }
 
-    private void checkCollision(Canvas canvas)
+    private void update()
     {
         ballX += xspeed;
         ballY += yspeed;
@@ -209,18 +207,28 @@ class GameView extends SurfaceView
             int posY = powerup.getY() - powerup.getSpeed();
             powerup.setY(posY);
         }
+    }
+    private void checkCollision(Canvas canvas)
+    {
 
         //check for off screen
         if(ballX < 0 || ballX + radius >= canvas.getWidth())
+        {
             xspeed*=-1;
+            soundEffect.start();
+        }
         if(ballY < 0 )
+        {
             yspeed*=-1;
+            soundEffect.start();
+        }
         else if(ballY + radius >= canvas.getHeight())
             GameOver(false);
+
         //paddle off screen
         if(paddleX < 0)
             paddleX = 0;
-        if(paddleX + paddleWidth > canvas.getWidth())
+        else if(paddleX + paddleWidth > canvas.getWidth())
             paddleX = canvas.getWidth() - paddleWidth;
 
         //check for paddle
@@ -228,7 +236,11 @@ class GameView extends SurfaceView
         {
             // Hit the top
             yspeed *= -1;
+            soundEffect.start();
         }
+        //keep paddle Y constant
+        if (paddleY == 0)
+            paddleY = canvas.getHeight() - 30;
 
         //check for each brick
         for(int i = 0; i < bricks.length; i++)
@@ -275,7 +287,7 @@ class GameView extends SurfaceView
                         }
                     }
 
-
+                    soundEffect.start();
                 }
             }
         }
