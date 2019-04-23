@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.media.MediaPlayer;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -47,7 +48,9 @@ class GameView extends SurfaceView
 
     private PowerUp powerup;
 
-    public Sound bounce = backgroundmusic.mp3;
+    //public Sound bounce = backgroundmusic.mp3;
+    MediaPlayer music;
+    MediaPlayer soundEffect;
 
     private GameThread gameThread;
 
@@ -92,10 +95,14 @@ class GameView extends SurfaceView
         });
 
         Setup();
+
+
+        music = MediaPlayer.create(context, R.raw.backgroundmusic);
+        soundEffect = MediaPlayer.create(context, R.raw.blipsoundeffect);
     }
 
     @Override
-    protected  void onDraw(Canvas canvas)
+    protected void onDraw(Canvas canvas)
     {
         if(running) {
             checkCollision(canvas);
@@ -146,7 +153,7 @@ class GameView extends SurfaceView
             Paint paint = new Paint();
             canvas.drawPaint(paint);
             paint.setColor(Color.WHITE);
-            paint.setTextSize(200);
+            paint.setTextSize(100);
             canvas.drawText(winner, 50, canvas.getHeight() / 2, paint);
         }
     }
