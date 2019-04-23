@@ -14,8 +14,6 @@ import java.util.Random;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import static java.lang.Math.pow;
-import static java.lang.Math.random;
 
 class GameView extends SurfaceView
 {
@@ -48,11 +46,14 @@ class GameView extends SurfaceView
 
     private PowerUp powerup;
 
-    //public Sound bounce = backgroundmusic.mp3;
     MediaPlayer music;
     MediaPlayer soundEffect;
 
     private GameThread gameThread;
+
+    private float timer;
+    private float timerMax = 10000;
+    long last_time = System.nanoTime();
 
     public GameView(Context context)
     {
@@ -152,13 +153,30 @@ class GameView extends SurfaceView
             Paint paint = new Paint();
             canvas.drawPaint(paint);
             paint.setColor(Color.WHITE);
-            paint.setTextSize(100);
+            paint.setTextSize(200);
             canvas.drawText(winner, 50, canvas.getHeight() / 2, paint);
+
+            long time = System.nanoTime();
+            int delta_time = (int) ((time - last_time) / 1000000);
+            last_time = time;
+            timer -= delta_time;
+
+            if(timer < 0)
+            {
+                winner = "";
+                level = 1;
+                running = true;
+                Setup();
+            }
         }
     }
 
     private void Setup()
     {
+        timer = timerMax;
+        ballY = 300;
+        ballX = 300;
+
         Log.i("debug", "Setup: called");
         if(level == 1)
         {
@@ -199,9 +217,11 @@ class GameView extends SurfaceView
 
     private void update()
     {
+        //move ball
         ballX += xspeed;
         ballY += yspeed;
 
+        //move paddle
         if(powerup != null)
         {
             int posY = powerup.getY() - powerup.getSpeed();
@@ -232,12 +252,23 @@ class GameView extends SurfaceView
             paddleX = canvas.getWidth() - paddleWidth;
 
         //check for paddle
-        if (Math.abs(ballY - paddleY) < radius && ballX + radius < paddleX + paddleWidth/2 && ballX - radius > paddleX - paddleWidth/2)
+        int DeltaX = ballX - max(paddleX, min(ballX, paddleX + paddleWidth));
+        int DeltaY = ballY - max(paddleY, min(ballY, paddleY + paddleWidth));
+
+        if((DeltaX * DeltaX + DeltaY * DeltaY) < (radius * radius))
         {
-            // Hit the top
-            yspeed *= -1;
+            if (Math.abs(ballY - paddleY) < radius)
+                yspeed *= -1;
+             else if (Math.abs(ballY - paddleY + paddleHeight) < radius)
+                 yspeed *= -1;
+            else if (Math.abs(ballX - paddleX) < radius)
+                xspeed *= -1;
+            else if (Math.abs(ballX - paddleX + paddleWidth) < radius)
+                xspeed *= -1;
+
             soundEffect.start();
         }
+
         //keep paddle Y constant
         if (paddleY == 0)
             paddleY = canvas.getHeight() - 30;
@@ -245,8 +276,8 @@ class GameView extends SurfaceView
         //check for each brick
         for(int i = 0; i < bricks.length; i++)
         {
-            int DeltaX = ballX - max(bricks[i].getX(), min(ballX, bricks[i].getX() + brickWidth));
-            int DeltaY = ballY - max(bricks[i].getY(), min(ballY, bricks[i].getY() + brickHeight));
+            DeltaX = ballX - max(bricks[i].getX(), min(ballX, bricks[i].getX() + brickWidth));
+            DeltaY = ballY - max(bricks[i].getY(), min(ballY, bricks[i].getY() + brickHeight));
 
             if((DeltaX * DeltaX + DeltaY * DeltaY) < (radius * radius))
             {
@@ -338,6 +369,8 @@ class GameView extends SurfaceView
             winner = "You Lose!";
 
         running = false;
+
+        music.stop();
     }
 
     @Override
@@ -363,4 +396,5 @@ class GameView extends SurfaceView
 
         return true;
     }
+
 }
